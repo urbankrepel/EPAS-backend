@@ -1,15 +1,17 @@
 import {
   CanActivate,
   ExecutionContext,
+  forwardRef,
   Inject,
   Injectable,
 } from '@nestjs/common';
 import { ContextIdFactory, ModuleRef, Reflector } from '@nestjs/core';
 import { RequestService } from 'src/user/request.service';
+import { UserService } from 'src/user/user.service';
 import { RolesEnum } from './roles.enum';
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const roles = this.reflector.get<RolesEnum[]>(

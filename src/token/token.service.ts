@@ -22,9 +22,14 @@ export class TokenService {
     });
     res.cookie('accessToken', accessTokenAndExpiresOn, this.cookieOptions);
 
-    const refreshTokenJwt = await this.jwtService.signAsync({
-      refreshToken,
-    });
+    const refreshTokenJwt = await this.jwtService.signAsync(
+      {
+        refreshToken,
+      },
+      {
+        expiresIn: '2d',
+      },
+    );
     res.cookie('refreshToken', refreshTokenJwt, this.cookieOptions);
   }
 
