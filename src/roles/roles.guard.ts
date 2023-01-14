@@ -1,13 +1,5 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  forwardRef,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
-import { ContextIdFactory, ModuleRef, Reflector } from '@nestjs/core';
-import { RequestService } from 'src/user/request.service';
-import { UserService } from 'src/user/user.service';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { RolesEnum } from './roles.enum';
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -23,6 +15,7 @@ export class RolesGuard implements CanActivate {
       }
       const request = context.switchToHttp().getRequest();
       const role = request.body.role;
+      if (!role) return false;
       return roles.includes(role);
     } catch (error) {
       return false;

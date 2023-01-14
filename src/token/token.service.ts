@@ -62,7 +62,7 @@ export class TokenService {
 
   async getToken(token: Token): Promise<Token> {
     let now = new Date();
-    let expDateUTC = new Date(token.expiresOn.toString()) || new Date();
+    let expDateUTC = new Date(token?.expiresOn?.toString()) || new Date();
     if (now.getTime() < expDateUTC.getTime()) {
       return token;
     }

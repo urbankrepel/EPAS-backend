@@ -28,7 +28,8 @@ export class UserService {
     return await this.userReposetory.save(newUser);
   }
 
-  async getCurrentUser(): Promise<User> {
-    return this.requestService.getUser();
+  async getUserData() {
+    const client = this.requestService.getClient();
+    return client.api('/me').get();
   }
 }
