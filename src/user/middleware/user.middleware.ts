@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { TokenService } from 'src/token/token.service';
-import { RequestService } from './request.service';
+import { RequestService } from '../request.service';
 
 @Injectable()
 export class UserMiddleware implements NestMiddleware {
@@ -36,7 +36,8 @@ export class UserMiddleware implements NestMiddleware {
         newToken.expiresOn
       ) {
         await this.tokenService.saveToken(newToken, res);
-        this.requestService.setToken(newToken);
+        await this.requestService.setToken(newToken);
+        req.body.role = this.requestService.getUser().role;
         return next();
       } else {
         throw new UnauthorizedException('No token');
