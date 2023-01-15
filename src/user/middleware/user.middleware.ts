@@ -14,7 +14,7 @@ export class UserMiddleware implements NestMiddleware {
     private readonly requestService: RequestService,
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: any, res: Response, next: NextFunction) {
     try {
       const accessTokenAndExpiresOn = req.cookies['accessToken'];
       const refreshTokenJwt = req.cookies['refreshToken'];
@@ -37,7 +37,7 @@ export class UserMiddleware implements NestMiddleware {
       ) {
         await this.tokenService.saveToken(newToken, res);
         await this.requestService.setToken(newToken);
-        req.body.role = this.requestService.getUser().role;
+        req.role = this.requestService.getUser().role;
         return next();
       } else {
         throw new UnauthorizedException('No token');
