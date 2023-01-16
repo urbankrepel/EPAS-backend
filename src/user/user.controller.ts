@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Post,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { NotFoundError } from 'rxjs';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 import { ChangeUserRoleDto } from './dto/changeUserRole.dto';
+import { GetUserByAzureIdDto } from './dto/getUserByAzureId.dto';
 import { RequestService } from './request.service';
 import { UserService } from './user.service';
 
@@ -31,8 +40,16 @@ export class UserController {
 
   @Post('changeUserRole')
   @Roles(RolesEnum.ADMIN)
+  @HttpCode(200)
   async changeUserRole(@Body() data: ChangeUserRoleDto) {
-    console.log(data);
     return this.userService.changeUserRole(data.azureId, data.role);
+  }
+
+  @Post('getByAzureId')
+  @HttpCode(200)
+  async getUserByAzureId(@Body() data: GetUserByAzureIdDto) {
+    const user = await this.userService.getSpecificUser(data.azureId);
+    if (!user) throw new NotFoundException('User not found');
+    return user;
   }
 }

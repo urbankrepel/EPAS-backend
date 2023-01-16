@@ -26,7 +26,7 @@ export class RequestService {
     try {
       const client = this.getClient();
       const user = await client.api('/me').get();
-      this.user = await this.userService.getUserByAzureId(user.id);
+      this.user = await this.userService.getUserByAzureId(user.id, true);
     } catch (error) {
       console.log(error);
     }

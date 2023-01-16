@@ -3,8 +3,8 @@ import {
   Injectable,
   forwardRef,
   Inject,
-  UnauthorizedException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
@@ -20,7 +20,10 @@ export class UserService {
     private readonly requestService: RequestService,
   ) {}
 
-  async getUserByAzureId(azureId: string): Promise<User> {
+  async getUserByAzureId(
+    azureId: string,
+    fromRequestSerivice: boolean = false,
+  ): Promise<User> {
     if (!azureId) throw new BadRequestException('AzureId is required');
     const user = await this.userReposetory.findOne({
       where: { azureId: azureId },
@@ -32,6 +35,13 @@ export class UserService {
     const newUser = new User();
     newUser.azureId = azureId;
     newUser.role = RolesEnum.DIJAK;
+
+    if (!fromRequestSerivice) {
+      const userData = await this.getSpecificUser(azureId);
+      if (!userData) throw new NotFoundException('User not found');
+      if (userData.id !== azureId)
+        throw new NotFoundException('User not found');
+    }
 
     return await this.userReposetory.save(newUser);
   }
@@ -57,14 +67,26 @@ export class UserService {
   async changeUserRole(azureId: string, role: RolesEnum) {
     const user = await this.getUserByAzureId(azureId);
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('User not found');
     }
-    console.log(user);
 
     user.role = role;
 
     await this.userReposetory.save(user);
 
     return { message: 'User role changed' };
+  }
+
+  async getSpecificUser(azureId: string) {
+    if (!azureId) throw new BadRequestException('AzureId is required');
+    try {
+      const client = this.requestService.getClient();
+
+      const searchUrl = `/users/${azureId}`;
+
+      return await client.api(searchUrl).get();
+    } catch (e) {
+      return null;
+    }
   }
 }
