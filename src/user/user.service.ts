@@ -22,7 +22,7 @@ export class UserService {
 
   async getUserByAzureId(
     azureId: string,
-    fromRequestSerivice: boolean = false,
+    fromRequestService: boolean = false,
   ): Promise<User> {
     if (!azureId) throw new BadRequestException('AzureId is required');
     const user = await this.userReposetory.findOne({
@@ -36,7 +36,7 @@ export class UserService {
     newUser.azureId = azureId;
     newUser.role = RolesEnum.DIJAK;
 
-    if (!fromRequestSerivice) {
+    if (!fromRequestService) {
       const userData = await this.getSpecificUser(azureId);
       if (!userData) throw new NotFoundException('User not found');
       if (userData.id !== azureId)
