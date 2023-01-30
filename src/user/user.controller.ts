@@ -5,7 +5,7 @@ import {
   HttpCode,
   NotFoundException,
   Post,
-  Res
+  Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { Roles } from 'src/roles/roles.decorator';
@@ -50,5 +50,12 @@ export class UserController {
     const user = await this.userService.getSpecificUser(data.azureId);
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  @Get('all')
+  @Roles(RolesEnum.ADMIN)
+  @HttpCode(200)
+  async getAllUsers() {
+    return this.userService.getAllUsers();
   }
 }

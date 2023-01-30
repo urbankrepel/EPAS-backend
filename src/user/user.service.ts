@@ -89,4 +89,8 @@ export class UserService {
       return null;
     }
   }
+
+  async getAllUsers() {
+    return await this.userReposetory.find();
+  }
 }

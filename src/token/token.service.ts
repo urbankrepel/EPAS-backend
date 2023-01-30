@@ -16,11 +16,16 @@ export class TokenService {
   constructor(private readonly jwtService: JwtService) {}
   async saveToken(token: Token, res: Response) {
     const { accessToken, refreshToken, expiresOn } = token;
+    const cookieExpiresOn = new Date();
+    cookieExpiresOn.setDate(cookieExpiresOn.getDate() + 1);
     const accessTokenAndExpiresOn = await this.jwtService.signAsync({
       accessToken,
       expiresOn,
     });
-    res.cookie('accessToken', accessTokenAndExpiresOn, this.cookieOptions);
+    res.cookie('accessToken', accessTokenAndExpiresOn, {
+      ...this.cookieOptions,
+      expires: cookieExpiresOn,
+    });
 
     const refreshTokenJwt = await this.jwtService.signAsync(
       {
@@ -30,7 +35,10 @@ export class TokenService {
         expiresIn: '2d',
       },
     );
-    res.cookie('refreshToken', refreshTokenJwt, this.cookieOptions);
+    res.cookie('refreshToken', refreshTokenJwt, {
+      ...this.cookieOptions,
+      expires: cookieExpiresOn,
+    });
   }
 
   async verifyToken(
