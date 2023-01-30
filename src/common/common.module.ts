@@ -1,14 +1,24 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '2h' },
+    ConfigModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        const options: JwtModuleOptions = {
+          privateKey: configService.get('JWT_PRIVATE_KEY'),
+          publicKey: configService.get('JWT_PUBLIC_KEY'),
+          signOptions: {
+            expiresIn: '24h',
+            algorithm: 'RS256',
+          },
+        };
+        return options;
+      },
+      inject: [ConfigService],
     }),
   ],
   exports: [JwtModule],
