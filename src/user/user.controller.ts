@@ -27,7 +27,7 @@ export class UserController {
     return this.userService.getUserData();
   }
 
-  @Get('profilePicture')
+  @Get('image')
   async getProfilePicture(@Res() res: Response) {
     res.setHeader('content-type', 'image/jpeg');
     const picture = await this.userService.getProfilePicture();
