@@ -36,6 +36,6 @@ import { WorkshopModule } from './workshop/workshop.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(UserMiddleware).forRoutes('user');
+    consumer.apply(UserMiddleware).forRoutes('user', 'workshop', 'timetable');
   }
 }

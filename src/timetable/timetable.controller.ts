@@ -18,31 +18,32 @@ import { RolesEnum } from 'src/roles/roles.enum';
 export class TimetableController {
   constructor(private readonly timetableService: TimetableService) {}
 
-  @Post()
-  create(@Body() createTimetableDto: CreateTimetableDto) {
-    return this.timetableService.create(createTimetableDto);
+  @Post('create')
+  async create(@Body() createTimetableDto: CreateTimetableDto) {
+    return await this.timetableService.create(createTimetableDto);
   }
 
-  @Get()
-  findAll() {
-    return this.timetableService.findAll();
+  @Get('all')
+  async findAll() {
+    return await this.timetableService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.timetableService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.timetableService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(
+  @Patch('update/:id')
+  async update(
     @Param('id') id: string,
     @Body() updateTimetableDto: UpdateTimetableDto,
   ) {
-    return this.timetableService.update(+id, updateTimetableDto);
+    await this.timetableService.update(+id, updateTimetableDto);
+    return "OK";
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.timetableService.remove(+id);
+  @Delete('delete/:id')
+  async remove(@Param('id') id: string) {
+    return await this.timetableService.remove(+id);
   }
 }

@@ -1,4 +1,15 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateTimetableDto } from './create-timetable.dto';
+import { IsDate, IsOptional, IsString } from 'class-validator';
 
-export class UpdateTimetableDto extends PartialType(CreateTimetableDto) {}
+export class UpdateTimetableDto {
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  start: String;
+
+  @IsOptional()
+  @IsString()
+  end: String;
+}

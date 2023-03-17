@@ -1,26 +1,40 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTimetableDto } from './dto/create-timetable.dto';
 import { UpdateTimetableDto } from './dto/update-timetable.dto';
+import { Timetable } from './entities/timetable.entity';
 
 @Injectable()
 export class TimetableService {
-  create(createTimetableDto: CreateTimetableDto) {
-    return 'This action adds a new timetable';
+  constructor(
+    @InjectRepository(Timetable)
+    private readonly timetableRepository: Repository<Timetable>,
+  ) {}
+
+  async create(createTimetableDto: CreateTimetableDto) {
+    return await this.timetableRepository.save(createTimetableDto);
   }
 
-  findAll() {
-    return `This action returns all timetable`;
+  async findAll() {
+    return await this.timetableRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} timetable`;
+  async findOne(id: number) {
+    if (!id) return null;
+    return await this.timetableRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateTimetableDto: UpdateTimetableDto) {
-    return `This action updates a #${id} timetable`;
+  async update(id: number, updateTimetableDto: UpdateTimetableDto) {
+    if (!id) return null;
+    return await this.timetableRepository.update(
+      { id },
+      { ...updateTimetableDto },
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} timetable`;
+  async remove(id: number) {
+    if (!id) return null;
+    return await this.timetableRepository.delete({ id });
   }
 }
