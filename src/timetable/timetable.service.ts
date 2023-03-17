@@ -13,7 +13,8 @@ export class TimetableService {
   ) {}
 
   async create(createTimetableDto: CreateTimetableDto) {
-    return await this.timetableRepository.save(createTimetableDto);
+    await this.timetableRepository.save(createTimetableDto);
+    return 'OK';
   }
 
   async findAll() {

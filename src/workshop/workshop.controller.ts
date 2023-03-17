@@ -18,31 +18,31 @@ import { RolesEnum } from 'src/roles/roles.enum';
 export class WorkshopController {
   constructor(private readonly workshopService: WorkshopService) {}
 
-  @Post()
-  create(@Body() createWorkshopDto: CreateWorkshopDto) {
-    return this.workshopService.create(createWorkshopDto);
+  @Post('create')
+  async create(@Body() createWorkshopDto: CreateWorkshopDto) {
+    return await this.workshopService.create(createWorkshopDto);
   }
 
-  @Get()
-  findAll() {
-    return this.workshopService.findAll();
+  @Get('all')
+  async findAll() {
+    return await this.workshopService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.workshopService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.workshopService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(
+  @Patch('update/:id')
+  async update(
     @Param('id') id: string,
     @Body() updateWorkshopDto: UpdateWorkshopDto,
   ) {
-    return this.workshopService.update(+id, updateWorkshopDto);
+    return await this.workshopService.update(+id, updateWorkshopDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.workshopService.remove(+id);
+  @Delete('delete/:id')
+  async remove(@Param('id') id: string) {
+    return await this.workshopService.remove(+id);
   }
 }

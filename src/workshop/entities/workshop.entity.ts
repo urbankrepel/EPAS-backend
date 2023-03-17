@@ -17,17 +17,20 @@ export class Workshop {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @ManyToOne(() => Timetable, (timetable) => timetable.workshops, {
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE',
     eager: true,
+    nullable: false,
   })
   @JoinColumn({ name: 'timetable_id' })
   timetable: Timetable;
 
-  @ManyToMany(() => User, (user) => user.workshops, { eager: true })
+  @ManyToMany(() => User, (user) => user.workshops, {
+    eager: true,
+  })
   users: User[];
 }
