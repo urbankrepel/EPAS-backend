@@ -7,6 +7,8 @@ import configuration from './config/configuration';
 import { TokenModule } from './token/token.module';
 import { UserMiddleware } from './user/middleware/user.middleware';
 import { UserModule } from './user/user.module';
+import { TimetableModule } from './timetable/timetable.module';
+import { WorkshopModule } from './workshop/workshop.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { UserModule } from './user/user.module';
       load: [configuration],
       isGlobal: true,
     }),
+    WorkshopModule,
+    TimetableModule,
   ],
 })
 export class AppModule implements NestModule {
