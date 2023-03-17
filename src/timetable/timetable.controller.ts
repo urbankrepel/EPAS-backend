@@ -13,11 +13,11 @@ import { UpdateTimetableDto } from './dto/update-timetable.dto';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 
-@Roles(RolesEnum.ADMIN)
 @Controller('timetable')
 export class TimetableController {
   constructor(private readonly timetableService: TimetableService) {}
 
+  @Roles(RolesEnum.ADMIN)
   @Post('create')
   async create(@Body() createTimetableDto: CreateTimetableDto) {
     return await this.timetableService.create(createTimetableDto);
@@ -33,15 +33,17 @@ export class TimetableController {
     return await this.timetableService.findOne(+id);
   }
 
+  @Roles(RolesEnum.ADMIN)
   @Patch('update/:id')
   async update(
     @Param('id') id: string,
     @Body() updateTimetableDto: UpdateTimetableDto,
   ) {
     await this.timetableService.update(+id, updateTimetableDto);
-    return "OK";
+    return 'OK';
   }
 
+  @Roles(RolesEnum.ADMIN)
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
     return await this.timetableService.remove(+id);

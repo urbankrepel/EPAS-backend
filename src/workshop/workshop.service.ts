@@ -52,4 +52,8 @@ export class WorkshopService {
     await this.workshopRepository.delete(id);
     return 'OK';
   }
+
+  async save(workshop: Workshop) {
+    return await this.workshopRepository.save(workshop);
+  }
 }

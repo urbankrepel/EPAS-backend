@@ -33,4 +33,7 @@ export class Workshop {
     eager: true,
   })
   users: User[];
+
+  @Column({ type: 'int', nullable: false, default: 21 })
+  capacity: number;
 }

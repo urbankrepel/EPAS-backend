@@ -12,13 +12,11 @@ import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 import { ChangeUserRoleDto } from './dto/changeUserRole.dto';
 import { GetUserByAzureIdDto } from './dto/getUserByAzureId.dto';
-import { RequestService } from './request.service';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(
-    private readonly requestService: RequestService,
     private readonly userService: UserService,
   ) {}
 
@@ -57,5 +55,12 @@ export class UserController {
   @HttpCode(200)
   async getAllUsers() {
     return this.userService.getAllUsers();
+  }
+
+  @Roles(RolesEnum.DIJAK)
+  @Post("joinworkshop")
+  @HttpCode(200)
+  async joinWorkshop(@Body() data: { workshopId: number }) {
+    return this.userService.joinWorkshop(data.workshopId);
   }
 }

@@ -8,6 +8,7 @@ import { User } from './entities/user.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { RequestService } from './request.service';
+import { WorkshopModule } from 'src/workshop/workshop.module';
 
 @Module({
   providers: [
@@ -18,7 +19,12 @@ import { RequestService } from './request.service';
     },
     RequestService,
   ],
-  imports: [TokenModule, CommonModule, TypeOrmModule.forFeature([User])],
+  imports: [
+    TokenModule,
+    CommonModule,
+    TypeOrmModule.forFeature([User]),
+    WorkshopModule,
+  ],
   controllers: [UserController],
   exports: [UserService, RequestService],
 })

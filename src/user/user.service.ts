@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
+import { Workshop } from 'src/workshop/entities/workshop.entity';
+import { WorkshopService } from 'src/workshop/workshop.service';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
@@ -18,6 +20,8 @@ export class UserService {
     @InjectRepository(User) private readonly userReposetory: Repository<User>,
     @Inject(forwardRef(() => RequestService))
     private readonly requestService: RequestService,
+    @Inject(forwardRef(() => WorkshopService))
+    private readonly workshopService: WorkshopService,
   ) {}
 
   async getUserByAzureId(
@@ -92,5 +96,33 @@ export class UserService {
 
   async getAllUsers() {
     return await this.userReposetory.find();
+  }
+
+  async joinWorkshop(workshopId: number) {
+    const workshops = await this.workshopService.findAll();
+    const workshop = workshops.find((w) => w.id === workshopId);
+    if (!workshop) throw new NotFoundException('Workshop not found');
+
+    const user = this.requestService.getUser();
+
+    if (workshop.users.find((u) => u.id === user.id))
+      throw new BadRequestException('User already joined workshop');
+
+    const timetable = workshop.timetable;
+    for (const ws of workshops) {
+      if (
+        ws.timetable.id === timetable.id &&
+        ws.users.find((u) => u.id === user.id)
+      ) {
+        ws.users.splice(ws.users.indexOf(user), 1);
+        await this.workshopService.save(ws);
+        break;
+      }
+    }
+
+    workshop.users.push(user);
+    await this.workshopService.save(workshop);
+
+    return { message: 'User joined workshop' };
   }
 }

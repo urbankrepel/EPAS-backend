@@ -13,11 +13,11 @@ import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 
-@Roles(RolesEnum.ADMIN)
 @Controller('workshop')
 export class WorkshopController {
   constructor(private readonly workshopService: WorkshopService) {}
 
+  @Roles(RolesEnum.ADMIN)
   @Post('create')
   async create(@Body() createWorkshopDto: CreateWorkshopDto) {
     return await this.workshopService.create(createWorkshopDto);
@@ -33,6 +33,7 @@ export class WorkshopController {
     return await this.workshopService.findOne(+id);
   }
 
+  @Roles(RolesEnum.ADMIN)
   @Patch('update/:id')
   async update(
     @Param('id') id: string,
@@ -41,6 +42,7 @@ export class WorkshopController {
     return await this.workshopService.update(+id, updateWorkshopDto);
   }
 
+  @Roles(RolesEnum.ADMIN)
   @Delete('delete/:id')
   async remove(@Param('id') id: string) {
     return await this.workshopService.remove(+id);
