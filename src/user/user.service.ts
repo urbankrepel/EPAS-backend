@@ -103,6 +103,10 @@ export class UserService {
     const workshop = workshops.find((w) => w.id === workshopId);
     if (!workshop) throw new NotFoundException('Workshop not found');
 
+    const copacity = workshop.capacity;
+    if (copacity <= workshop.users.length)
+      throw new BadRequestException('Workshop is full');
+
     const user = this.requestService.getUser();
 
     if (workshop.users.find((u) => u.id === user.id))
