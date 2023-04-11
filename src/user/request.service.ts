@@ -10,7 +10,7 @@ export class RequestService {
   private user: User;
   constructor(private readonly userService: UserService) {}
 
-  async setToken(token: Token) {
+  async setToken(token: Token): Promise<boolean> {
     this.token = token;
     this.client = Client.init({
       defaultVersion: 'v1.0',
@@ -19,17 +19,21 @@ export class RequestService {
         done(null, token.accessToken.toString());
       },
     });
-    await this.setUser();
+    return await this.setUser();
   }
 
-  private async setUser() {
+  private async setUser(): Promise<boolean> {
     try {
       const client = this.getClient();
       const user = await client.api('/me').get();
+      if (!user.id) {
+        return false;
+      }
       this.user = await this.userService.getUserByAzureId(user.id, true);
     } catch (error) {
-      console.log(error);
+      return false;
     }
+    return true;
   }
 
   getToken(): Token {

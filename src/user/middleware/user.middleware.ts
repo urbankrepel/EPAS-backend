@@ -16,34 +16,27 @@ export class UserMiddleware implements NestMiddleware {
 
   async use(req: any, res: Response, next: NextFunction) {
     try {
-      const accessTokenAndExpiresOn = req.cookies['accessToken'];
-      const refreshTokenJwt = req.cookies['refreshToken'];
-
-      const token = await this.tokenService.verifyToken(
-        accessTokenAndExpiresOn,
-        refreshTokenJwt,
-      );
+      const jwt = req.headers.authorization;
+      if (!jwt) {
+        throw new UnauthorizedException();
+      }
+      const token = await this.tokenService.getToken(jwt);
       if (!token) {
-        throw new UnauthorizedException('No token');
+        throw new UnauthorizedException();
       }
-
-      const newToken = await this.tokenService.getToken(token);
-
-      if (
-        newToken &&
-        newToken.accessToken &&
-        newToken.refreshToken &&
-        newToken.expiresOn
-      ) {
-        await this.tokenService.saveToken(newToken, res);
-        await this.requestService.setToken(newToken);
-        req.role = this.requestService.getUser().role;
-        return next();
-      } else {
-        throw new UnauthorizedException('No token');
+      const isValid = await this.requestService.setToken(token);
+      if (!isValid) {
+        throw new UnauthorizedException();
       }
+      req.role = this.requestService.getUser().role;
+      return next();
     } catch (e) {
       throw e;
     }
   }
 }
+
+// await this.tokenService.saveToken(newToken, res);
+//         await this.requestService.setToken(newToken);
+//         req.role = this.requestService.getUser().role;
+//         return next();
