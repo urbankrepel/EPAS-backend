@@ -1,7 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import configuration from './config/configuration';
 import { TokenModule } from './token/token.module';
@@ -12,10 +11,12 @@ import { WorkshopModule } from './workshop/workshop.module';
 
 @Module({
   imports: [
-    AuthModule,
     UserModule,
     CommonModule,
     TokenModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -25,10 +26,6 @@ import { WorkshopModule } from './workshop/workshop.module';
       database: process.env.DB_NAME,
       synchronize: true,
       autoLoadEntities: true,
-    }),
-    ConfigModule.forRoot({
-      load: [configuration],
-      isGlobal: true,
     }),
     WorkshopModule,
     TimetableModule,

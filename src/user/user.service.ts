@@ -55,6 +55,26 @@ export class UserService {
     return client.api('/me').get();
   }
 
+  async getUserGrade(): Promise<string | null> {
+    const client = this.requestService.getClient();
+    const results = await client
+      .api(
+        '/me/memberOf?$select=groupTypes,mailEnabled,securityEnabled,displayName',
+      )
+      .responseType(ResponseType.JSON)
+      .get();
+
+    const grade =
+      results.value.find(
+        (e: any) =>
+          e.mailEnabled == true &&
+          e.securityEnabled == true &&
+          e.groupTypes.length == 0,
+      ) || null;
+
+    return grade ? grade.displayName : null;
+  }
+
   async getProfilePicture() {
     try {
       const client = this.requestService.getClient();
@@ -112,6 +132,18 @@ export class UserService {
     if (workshop.users.find((u) => u.id === user.id))
       throw new BadRequestException('User already joined workshop');
 
+    const usersWorkshops = workshops.filter((workshop) =>
+      workshop.users.includes(user),
+    );
+    const workshopWithSameName = usersWorkshops.find(
+      (workshop) => workshop.name === workshop.name,
+    );
+    if (workshopWithSameName) {
+      throw new BadRequestException(
+        'You can\'t join two workshops with the same name',
+      );
+    }
+
     const timetable = workshop.timetable;
     for (const ws of workshops) {
       if (
@@ -128,5 +160,21 @@ export class UserService {
     await this.workshopService.save(workshop);
 
     return { message: 'User joined workshop' };
+  }
+
+  async leaveWorkshop(workshopId: number) {
+    const workshops = await this.workshopService.findAll();
+    const workshop = workshops.find((w) => w.id === workshopId);
+    if (!workshop) throw new NotFoundException('Workshop not found');
+
+    const user = this.requestService.getUser();
+
+    if (!workshop.users.find((u) => u.id === user.id))
+      throw new BadRequestException('User is not in workshop');
+
+    workshop.users.splice(workshop.users.indexOf(user), 1);
+    await this.workshopService.save(workshop);
+
+    return { message: 'User left workshop' };
   }
 }

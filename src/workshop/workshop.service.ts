@@ -28,6 +28,13 @@ export class WorkshopService {
     return await this.workshopRepository.findOne({ where: { id } });
   }
 
+  async findWorkshopByTimetableId(timetableId: number) {
+    return await this.workshopRepository.find({
+      where: { timetable: { id: timetableId } },
+      loadEagerRelations: false,
+    });
+  }
+
   async update(id: number, updateWorkshopDto: UpdateWorkshopDto) {
     if (!id) return null;
     const updateData: any = { ...updateWorkshopDto };

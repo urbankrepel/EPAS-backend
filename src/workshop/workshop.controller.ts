@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { WorkshopService } from './workshop.service';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
@@ -31,6 +32,11 @@ export class WorkshopController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.workshopService.findOne(+id);
+  }
+
+  @Get('timetable/:id')
+  async findWorkshopByTimetableId(@Param('id', ParseIntPipe) id: number) {
+    return await this.workshopService.findWorkshopByTimetableId(+id);
   }
 
   @Roles(RolesEnum.ADMIN)
