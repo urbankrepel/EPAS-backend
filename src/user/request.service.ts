@@ -1,7 +1,9 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Scope, UnauthorizedException } from '@nestjs/common';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { GradeEntity } from './entities/grade.entity';
+import { RolesEnum } from 'src/roles/roles.enum';
 
 @Injectable({ scope: Scope.REQUEST })
 export class RequestService {
@@ -30,6 +32,13 @@ export class RequestService {
         return false;
       }
       this.user = await this.userService.getUserByAzureId(user.id, true);
+      if (!this.user.grade && this.user.role === RolesEnum.DIJAK) {
+        const grade = await this.getUserGrade();
+        if (!grade) {
+          throw new UnauthorizedException('You are not in allowed grades');
+        }
+        this.userService.setUserGrade(this.user, grade);
+      }
     } catch (error) {
       return false;
     }
@@ -46,5 +55,10 @@ export class RequestService {
 
   getUser(): User {
     return this.user;
+  }
+
+  private async getUserGrade(): Promise<GradeEntity | null> {
+    const grade = await this.userService.getUserGrade();
+    return await this.userService.getGrade(grade);
   }
 }

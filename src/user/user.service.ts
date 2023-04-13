@@ -13,6 +13,7 @@ import { WorkshopService } from 'src/workshop/workshop.service';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
+import { GradeEntity } from './entities/grade.entity';
 
 @Injectable()
 export class UserService {
@@ -22,6 +23,8 @@ export class UserService {
     private readonly requestService: RequestService,
     @Inject(forwardRef(() => WorkshopService))
     private readonly workshopService: WorkshopService,
+    @InjectRepository(GradeEntity)
+    private readonly gradeReposetory: Repository<GradeEntity>,
   ) {}
 
   async getUserByAzureId(
@@ -73,6 +76,20 @@ export class UserService {
       ) || null;
 
     return grade ? grade.displayName : null;
+  }
+
+  async setUserGrade(user: User, grade: GradeEntity) {
+    user.grade = grade;
+    await this.userReposetory.save(user);
+  }
+
+  async getGrade(name: string): Promise<GradeEntity | null> {
+    if (!name) {
+      return null;
+    }
+    return await this.gradeReposetory.findOne({
+      where: { name: name },
+    });
   }
 
   async getProfilePicture() {
@@ -140,7 +157,7 @@ export class UserService {
     );
     if (workshopWithSameName) {
       throw new BadRequestException(
-        'You can\'t join two workshops with the same name',
+        "You can't join two workshops with the same name",
       );
     }
 

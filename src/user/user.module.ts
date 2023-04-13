@@ -9,6 +9,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { RequestService } from './request.service';
 import { WorkshopModule } from 'src/workshop/workshop.module';
+import { GradeEntity } from './entities/grade.entity';
 
 @Module({
   providers: [
@@ -22,7 +23,7 @@ import { WorkshopModule } from 'src/workshop/workshop.module';
   imports: [
     TokenModule,
     CommonModule,
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, GradeEntity]),
     WorkshopModule,
   ],
   controllers: [UserController],
