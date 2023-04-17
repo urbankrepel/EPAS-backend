@@ -25,7 +25,9 @@ export class TimetableController {
 
   @Get('all')
   async findAll() {
-    return await this.timetableService.findAll();
+    const timetables = await this.timetableService.findAll();
+    console.log(timetables);
+    return timetables;
   }
 
   @Get(':id')

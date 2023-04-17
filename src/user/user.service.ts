@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
-import { Workshop } from 'src/workshop/entities/workshop.entity';
 import { WorkshopService } from 'src/workshop/workshop.service';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';

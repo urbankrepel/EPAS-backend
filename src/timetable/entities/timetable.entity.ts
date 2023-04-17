@@ -1,7 +1,7 @@
 import { Workshop } from 'src/workshop/entities/workshop.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity("timetables")
+@Entity('timetables')
 export class Timetable {
   @PrimaryGeneratedColumn()
   id: number;

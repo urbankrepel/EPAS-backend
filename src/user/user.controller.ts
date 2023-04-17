@@ -16,23 +16,11 @@ import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get()
   getUser() {
-    return this.userService.getUserData();
-  }
-
-  @Get('image')
-  async getProfilePicture(@Res() res: Response) {
-    res.setHeader('content-type', 'image/jpeg');
-    const picture = await this.userService.getProfilePicture();
-    if (picture) {
-      return res.send(picture);
-    }
-    return res.status(404).send("Couldn't find profile picture");
+    return true;
   }
 
   @Post('changeUserRole')
@@ -50,15 +38,15 @@ export class UserController {
     return user;
   }
 
-  @Get('all')
   @Roles(RolesEnum.ADMIN)
+  @Get('all')
   @HttpCode(200)
   async getAllUsers() {
     return this.userService.getAllUsers();
   }
 
   @Roles(RolesEnum.DIJAK)
-  @Post("joinworkshop")
+  @Post('joinworkshop')
   @HttpCode(200)
   async joinWorkshop(@Body() data: { workshopId: number }) {
     return this.userService.joinWorkshop(data.workshopId);
