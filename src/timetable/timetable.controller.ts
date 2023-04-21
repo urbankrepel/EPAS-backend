@@ -26,7 +26,6 @@ export class TimetableController {
   @Get('all')
   async findAll() {
     const timetables = await this.timetableService.findAll();
-    console.log(timetables);
     return timetables;
   }
 

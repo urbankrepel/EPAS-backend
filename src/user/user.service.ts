@@ -91,19 +91,6 @@ export class UserService {
     });
   }
 
-  async getProfilePicture() {
-    try {
-      const client = this.requestService.getClient();
-      const picture = await client
-        .api('/me/photo/$value')
-        .responseType(ResponseType.ARRAYBUFFER)
-        .get();
-      return Buffer.from(picture, 'base64');
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   async changeUserRole(azureId: string, role: RolesEnum) {
     const user = await this.getUserByAzureId(azureId);
     if (!user) {

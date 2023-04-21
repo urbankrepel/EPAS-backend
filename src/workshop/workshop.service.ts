@@ -63,4 +63,23 @@ export class WorkshopService {
   async save(workshop: Workshop) {
     return await this.workshopRepository.save(workshop);
   }
+
+  async getCountAndCopacityByTimetableId(workshopId: number) {
+    const workshop = await this.workshopRepository.findOne({
+      where: { id: workshopId },
+      relations: ['users'],
+    });
+
+    return {
+      count: workshop.users.length,
+      capacity: workshop.capacity,
+    };
+  }
+
+  async findWorkshopsByName(name: string) {
+    return await this.workshopRepository.find({
+      where: { name: name },
+      loadRelationIds: true, 
+    });
+  }
 }

@@ -39,6 +39,17 @@ export class WorkshopController {
     return await this.workshopService.findWorkshopByTimetableId(+id);
   }
 
+  @Get('copacity/:id')
+  async findWorkshopByCapacity(@Param('id', ParseIntPipe) id: number) {
+    return await this.workshopService.getCountAndCopacityByTimetableId(+id);
+  }
+
+  @Get('name/:name')
+  async findWorkshopsByName(@Param('name') name: string) {
+    return await this.workshopService.findWorkshopsByName(name);
+  }
+
+
   @Roles(RolesEnum.ADMIN)
   @Patch('update/:id')
   async update(
