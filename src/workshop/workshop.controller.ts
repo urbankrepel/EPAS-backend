@@ -49,7 +49,6 @@ export class WorkshopController {
     return await this.workshopService.findWorkshopsByName(name);
   }
 
-
   @Roles(RolesEnum.ADMIN)
   @Patch('update/:id')
   async update(

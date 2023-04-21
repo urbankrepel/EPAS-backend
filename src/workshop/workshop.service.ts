@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 import { Workshop } from './entities/workshop.entity';
+import { RequestService } from 'src/user/request.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class WorkshopService {
@@ -79,7 +86,14 @@ export class WorkshopService {
   async findWorkshopsByName(name: string) {
     return await this.workshopRepository.find({
       where: { name: name },
-      loadRelationIds: true, 
+      loadRelationIds: true,
+    });
+  }
+
+  async findJoinedWorkshops(user: User) {
+    return await this.workshopRepository.find({
+      where: { users: { id: user.id } },
+      loadRelationIds: true,
     });
   }
 }

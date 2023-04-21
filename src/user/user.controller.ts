@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   NotFoundException,
+  ParseIntPipe,
   Post,
   Res,
 } from '@nestjs/common';
@@ -48,7 +49,13 @@ export class UserController {
   @Roles(RolesEnum.DIJAK)
   @Post('joinworkshop')
   @HttpCode(200)
-  async joinWorkshop(@Body() data: { workshopId: number }) {
-    return this.userService.joinWorkshop(data.workshopId);
+  async joinWorkshop(@Body('workshopId', ParseIntPipe) workshopId: number) {
+    return this.userService.joinWorkshop(workshopId);
+  }
+
+  @Get('joinedworkshops')
+  @HttpCode(200)
+  async getJoinedWorkshops() {
+    return await this.userService.getJoinedWorkshops();
   }
 }

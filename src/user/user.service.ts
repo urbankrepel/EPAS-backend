@@ -180,4 +180,9 @@ export class UserService {
 
     return { message: 'User left workshop' };
   }
+
+  async getJoinedWorkshops() {
+    const user = this.requestService.getUser();
+    return await this.workshopService.findJoinedWorkshops(user);
+  }
 }
