@@ -124,24 +124,24 @@ export class UserService {
   async joinWorkshop(workshopId: number) {
     const workshops = await this.workshopService.findAll();
     const workshop = workshops.find((w) => w.id === workshopId);
-    if (!workshop) throw new NotFoundException('Workshop not found');
+    if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
 
     const copacity = workshop.capacity;
     if (copacity <= workshop.users.length)
-      throw new BadRequestException('Workshop is full');
+      throw new BadRequestException('Delavnica je polna');
 
     const user = this.requestService.getUser();
 
     if (workshop.users.find((u) => u.id === user.id))
-      throw new BadRequestException('User already joined workshop');
+      throw new BadRequestException('V to delavnico ste že prijavljeni');
 
     const usersWorkshops = workshops.filter((workshop) =>
-      workshop.users.includes(user),
+      workshop.users.find((u) => u.id === user.id) ? true : false,
     );
     const workshopWithSameName = usersWorkshops.find(
-      (workshop) => workshop.name === workshop.name,
+      (userWorkshop) => userWorkshop.name === workshop.name,
     );
-    if (workshopWithSameName) {
+    if (workshopWithSameName !== undefined) {
       throw new BadRequestException(
         "You can't join two workshops with the same name",
       );

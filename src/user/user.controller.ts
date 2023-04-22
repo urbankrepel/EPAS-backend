@@ -53,6 +53,14 @@ export class UserController {
     return this.userService.joinWorkshop(workshopId);
   }
 
+  @Roles(RolesEnum.DIJAK)
+  @Post('leaveworkshop')
+  @HttpCode(200)
+  async leaveWorkshop(@Body('workshopId', ParseIntPipe) workshopId: number) {
+    return this.userService.leaveWorkshop(workshopId);
+  }
+
+  @Roles(RolesEnum.DIJAK)
   @Get('joinedworkshops')
   @HttpCode(200)
   async getJoinedWorkshops() {

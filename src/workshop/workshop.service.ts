@@ -28,7 +28,10 @@ export class WorkshopService {
   }
 
   async findAll() {
-    return await this.workshopRepository.find();
+    return await this.workshopRepository.find({
+      relations: ['timetable', 'users'],
+      loadEagerRelations: true,
+    });
   }
 
   async findOne(id: number) {
