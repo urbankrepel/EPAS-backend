@@ -1,8 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule
-} from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from './common/common.module';
@@ -29,7 +25,9 @@ import { WorkshopModule } from './workshop/workshop.module';
       database: process.env.DB_NAME,
       synchronize: true,
       autoLoadEntities: true,
-      ssl: process.env.DB_SSL === 'true',
+      ssl: {
+        ca: process.env.SSL_CERT,
+      },
     }),
     WorkshopModule,
     TimetableModule,
