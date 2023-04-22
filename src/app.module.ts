@@ -29,6 +29,7 @@ import { WorkshopModule } from './workshop/workshop.module';
       database: process.env.DB_NAME,
       synchronize: true,
       autoLoadEntities: true,
+      ssl: process.env.DB_SSL === 'true',
     }),
     WorkshopModule,
     TimetableModule,
