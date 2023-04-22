@@ -142,9 +142,11 @@ export class UserService {
       (userWorkshop) => userWorkshop.name === workshop.name,
     );
     if (workshopWithSameName !== undefined) {
-      throw new BadRequestException(
-        "You can't join two workshops with the same name",
-      );
+      throw new BadRequestException({
+        workshopWithSameNameId: workshopWithSameName.id,
+        message: "You can't join two workshops with the same name",
+        statusCode: 400,
+      });
     }
 
     const timetable = workshop.timetable;
