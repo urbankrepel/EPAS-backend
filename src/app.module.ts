@@ -1,20 +1,16 @@
 import {
-  CacheModule,
   MiddlewareConsumer,
   Module,
-  NestModule,
+  NestModule
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from './common/common.module';
-import configuration from './config/configuration';
+import { TimetableModule } from './timetable/timetable.module';
 import { TokenModule } from './token/token.module';
 import { UserMiddleware } from './user/middleware/user.middleware';
 import { UserModule } from './user/user.module';
-import { TimetableModule } from './timetable/timetable.module';
 import { WorkshopModule } from './workshop/workshop.module';
-import { redisStore } from 'cache-manager-redis-store';
-import type { RedisClientOptions } from 'redis';
 
 @Module({
   imports: [

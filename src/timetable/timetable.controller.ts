@@ -23,6 +23,7 @@ export class TimetableController {
     return await this.timetableService.create(createTimetableDto);
   }
 
+  
   @Get('all')
   async findAll() {
     const timetables = await this.timetableService.findAll();
