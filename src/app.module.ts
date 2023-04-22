@@ -26,7 +26,7 @@ import { WorkshopModule } from './workshop/workshop.module';
       synchronize: true,
       autoLoadEntities: true,
       ssl: {
-        ca: process.env.SSL_CERT,
+        rejectUnauthorized: false,
       },
     }),
     WorkshopModule,
