@@ -5,6 +5,7 @@ import {
   Inject,
   BadRequestException,
   NotFoundException,
+  CACHE_MANAGER,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
@@ -13,6 +14,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
 import { GradeEntity } from './entities/grade.entity';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UserService {
@@ -24,6 +26,8 @@ export class UserService {
     private readonly workshopService: WorkshopService,
     @InjectRepository(GradeEntity)
     private readonly gradeReposetory: Repository<GradeEntity>,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   async getUserByAzureId(
@@ -156,13 +160,15 @@ export class UserService {
         ws.users.find((u) => u.id === user.id)
       ) {
         ws.users.splice(ws.users.indexOf(user), 1);
-        await this.workshopService.save(ws);
+        await this.workshopService.save(ws);  
+        await this.cacheManager.del(`/api/workshop/copacity/${ws.id}`);
         break;
       }
     }
 
     workshop.users.push(user);
     await this.workshopService.save(workshop);
+    await this.cacheManager.del(`/api/workshop/copacity/${workshop.id}`);
 
     return { message: 'User joined workshop' };
   }
@@ -179,6 +185,7 @@ export class UserService {
 
     workshop.users.splice(workshop.users.indexOf(user), 1);
     await this.workshopService.save(workshop);
+    await this.cacheManager.del(`/api/workshop/copacity/${workshop.id}`);
 
     return { message: 'User left workshop' };
   }

@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  CacheModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommonModule } from './common/common.module';
@@ -7,6 +12,8 @@ import { TokenModule } from './token/token.module';
 import { UserMiddleware } from './user/middleware/user.middleware';
 import { UserModule } from './user/user.module';
 import { WorkshopModule } from './workshop/workshop.module';
+import { redisStore } from 'cache-manager-redis-store';
+import { RedisClientOptions } from 'redis';
 
 @Module({
   imports: [
@@ -25,9 +32,21 @@ import { WorkshopModule } from './workshop/workshop.module';
       database: process.env.DB_NAME,
       synchronize: true,
       autoLoadEntities: true,
-      ssl: {
-        rejectUnauthorized: false,
+      ssl:
+        process.env.DB_SSL !== 'true'
+          ? false
+          : {
+              rejectUnauthorized: false,
+            },
+    }),
+    CacheModule.register<RedisClientOptions>({
+      store: redisStore as any,
+      socket: {
+        host: process.env.REDIS_HOST,
+        port: parseInt(process.env.REDIS_PORT),
       },
+      password: process.env.REDIS_PASSWORD,
+      isGlobal: true,
     }),
     WorkshopModule,
     TimetableModule,

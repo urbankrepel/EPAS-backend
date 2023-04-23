@@ -5,10 +5,8 @@ import {
   HttpCode,
   NotFoundException,
   ParseIntPipe,
-  Post,
-  Res,
+  Post
 } from '@nestjs/common';
-import { Response } from 'express';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 import { ChangeUserRoleDto } from './dto/changeUserRole.dto';

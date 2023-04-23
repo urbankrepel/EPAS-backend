@@ -7,6 +7,10 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  CacheTTL,
+  CacheInterceptor,
+  UseInterceptors,
+  CacheKey,
 } from '@nestjs/common';
 import { WorkshopService } from './workshop.service';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
@@ -34,16 +38,22 @@ export class WorkshopController {
     return await this.workshopService.findOne(+id);
   }
 
+  @CacheTTL(60)
+  @UseInterceptors(CacheInterceptor)
   @Get('timetable/:id')
   async findWorkshopByTimetableId(@Param('id', ParseIntPipe) id: number) {
     return await this.workshopService.findWorkshopByTimetableId(+id);
   }
 
+  @CacheTTL(60)
+  @UseInterceptors(CacheInterceptor)
   @Get('copacity/:id')
   async findWorkshopByCapacity(@Param('id', ParseIntPipe) id: number) {
     return await this.workshopService.getCountAndCopacityByTimetableId(+id);
   }
 
+  @CacheTTL(60)
+  @UseInterceptors(CacheInterceptor)
   @Get('name/:name')
   async findWorkshopsByName(@Param('name') name: string) {
     return await this.workshopService.findWorkshopsByName(name);

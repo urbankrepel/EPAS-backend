@@ -6,6 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  CacheInterceptor,
+  CacheTTL,
 } from '@nestjs/common';
 import { TimetableService } from './timetable.service';
 import { CreateTimetableDto } from './dto/create-timetable.dto';
@@ -23,7 +26,8 @@ export class TimetableController {
     return await this.timetableService.create(createTimetableDto);
   }
 
-  
+  @CacheTTL(60)
+  @UseInterceptors(CacheInterceptor)
   @Get('all')
   async findAll() {
     const timetables = await this.timetableService.findAll();
