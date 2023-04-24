@@ -104,6 +104,14 @@ export class UserService {
     return code;
   }
 
+  async getUserByCode(code: number) {
+    if (!code) throw new BadRequestException('Code is required');
+    return await this.userReposetory.findOne({
+      where: { code: code },
+      loadEagerRelations: false,
+    });
+  }
+
   async getGrade(name: string): Promise<GradeEntity | null> {
     if (!name) {
       return null;

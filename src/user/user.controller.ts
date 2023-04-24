@@ -12,6 +12,7 @@ import { RolesEnum } from 'src/roles/roles.enum';
 import { ChangeUserRoleDto } from './dto/changeUserRole.dto';
 import { GetUserByAzureIdDto } from './dto/getUserByAzureId.dto';
 import { UserService } from './user.service';
+import { User } from './entities/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -83,6 +84,9 @@ export class UserController {
   @HttpCode(200)
   async checkJoinWorkshop(
     @Body('workshopId', ParseIntPipe) workshopId: number,
-    @Body('userCode') userCode: string,
-  ) {}
+    @Body('userCode', ParseIntPipe) userCode: number,
+  ) {
+    const user:User = await this.userService.getUserByCode(userCode);
+    return await this.userService.chechIfUserIsInWorkshop(workshopId, user);
+  }
 }
