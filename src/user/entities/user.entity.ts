@@ -22,6 +22,9 @@ export class User {
   @Column({ type: 'enum', enum: RolesEnum })
   role: RolesEnum;
 
+  @Column({ nullable: true, unique: true })
+  code: number;
+
   @ManyToMany(() => Workshop, (workshop) => workshop.users)
   @JoinTable({
     name: 'registered_users_on_workshops',

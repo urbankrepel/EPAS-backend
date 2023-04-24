@@ -5,7 +5,7 @@ import {
   HttpCode,
   NotFoundException,
   ParseIntPipe,
-  Post
+  Post,
 } from '@nestjs/common';
 import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
@@ -45,6 +45,12 @@ export class UserController {
   }
 
   @Roles(RolesEnum.DIJAK)
+  @Get('code')
+  async getCode() {
+    return await this.userService.generateUniqueCode();
+  }
+
+  @Roles(RolesEnum.DIJAK)
   @Post('joinworkshop')
   @HttpCode(200)
   async joinWorkshop(@Body('workshopId', ParseIntPipe) workshopId: number) {
@@ -71,4 +77,12 @@ export class UserController {
   async getMyWorkshops() {
     return await this.userService.getMyWorkshops();
   }
+
+  @Roles(RolesEnum.VODJA)
+  @Post('chech_join_workshop')
+  @HttpCode(200)
+  async checkJoinWorkshop(
+    @Body('workshopId', ParseIntPipe) workshopId: number,
+    @Body('userCode') userCode: string,
+  ) {}
 }

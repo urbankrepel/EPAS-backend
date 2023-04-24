@@ -35,7 +35,11 @@ export class WorkshopService {
   }
 
   async findOne(id: number) {
-    return await this.workshopRepository.findOne({ where: { id } });
+    return await this.workshopRepository.findOne({
+      where: { id },
+      relations: ['timetable', 'users'],
+      loadEagerRelations: true,
+    });
   }
 
   async findWorkshopByTimetableId(timetableId: number) {
@@ -93,10 +97,16 @@ export class WorkshopService {
     });
   }
 
-  async findJoinedWorkshops(user: User) {
+  async findJoinedWorkshops(
+    user: User,
+    loadEagerRelations: boolean = false,
+    loadRelationIds: boolean = true,
+  ) {
     return await this.workshopRepository.find({
       where: { users: { id: user.id } },
-      loadRelationIds: true,
+      relations: ['timetable'],
+      loadRelationIds: loadRelationIds,
+      loadEagerRelations: loadEagerRelations,
     });
   }
 

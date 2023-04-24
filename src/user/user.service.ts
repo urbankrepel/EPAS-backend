@@ -88,6 +88,22 @@ export class UserService {
     await this.userReposetory.save(user);
   }
 
+  async generateUniqueCode() {
+    const user = this.requestService.getUser();
+    if (user.code) return user.code;
+
+    const code = Math.floor(100000 + Math.random() * 900000);
+    user.code = code;
+    try {
+      await this.userReposetory.save(user);
+    } catch (e) {
+      if (e.code === '23505') {
+        return await this.generateUniqueCode();
+      }
+    }
+    return code;
+  }
+
   async getGrade(name: string): Promise<GradeEntity | null> {
     if (!name) {
       return null;
@@ -200,5 +216,29 @@ export class UserService {
   async getMyWorkshops() {
     const user = this.requestService.getUser();
     return await this.workshopService.findWorkshopsByLeader(user);
+  }
+
+  async chechIfUserIsInWorkshop(workshopId: number, user: User) {
+    const [joinedWorkshops, workshop] = await Promise.all([
+      this.workshopService.findJoinedWorkshops(user, true, false),
+      this.workshopService.findOne(workshopId),
+    ]);
+    const isJoinedAtWorkshop = joinedWorkshops.find(
+      (w) => w.id === workshop.id,
+    );
+    if (isJoinedAtWorkshop) {
+      return {
+        isJoinedAtWorkshop: true,
+      };
+    }
+    const workshopAtSameTimetable = joinedWorkshops.find(
+      (w) => w.timetable.id === workshop.timetable.id,
+    );
+    if (workshopAtSameTimetable) {
+      return {
+        isJoinedAtWorkshop: false,
+        workshop: workshopAtSameTimetable,
+      };
+    }
   }
 }
