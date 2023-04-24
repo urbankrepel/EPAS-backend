@@ -64,4 +64,11 @@ export class UserController {
   async getJoinedWorkshops() {
     return await this.userService.getJoinedWorkshops();
   }
+
+  @Roles(RolesEnum.VODJA)
+  @Get('myworkshops')
+  @HttpCode(200)
+  async getMyWorkshops() {
+    return await this.userService.getMyWorkshops();
+  }
 }

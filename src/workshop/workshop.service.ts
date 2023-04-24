@@ -99,4 +99,12 @@ export class WorkshopService {
       loadRelationIds: true,
     });
   }
+
+  async findWorkshopsByLeader(leader: User) {
+    return await this.workshopRepository.find({
+      where: { leader: { id: leader.id } },
+      relations: ['timetable'],
+      loadRelationIds: true,
+    });
+  }
 }

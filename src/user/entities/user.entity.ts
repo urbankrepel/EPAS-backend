@@ -23,7 +23,11 @@ export class User {
   role: RolesEnum;
 
   @ManyToMany(() => Workshop, (workshop) => workshop.users)
-  @JoinTable({ name: 'registered_users_on_workshops' })
+  @JoinTable({
+    name: 'registered_users_on_workshops',
+    joinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'workshop_id' },
+  })
   workshops: Workshop[];
 
   @ManyToOne(() => GradeEntity)

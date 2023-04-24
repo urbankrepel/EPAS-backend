@@ -36,4 +36,8 @@ export class Workshop {
 
   @Column({ type: 'int', nullable: false, default: 21 })
   capacity: number;
+
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'leader_id' })
+  leader: User;
 }

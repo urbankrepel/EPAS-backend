@@ -37,6 +37,8 @@ export class UserService {
     if (!azureId) throw new BadRequestException('AzureId is required');
     const user = await this.userReposetory.findOne({
       where: { azureId: azureId },
+      relations: ['grade'],
+      loadEagerRelations: true,
     });
     if (user) {
       return user;
@@ -160,7 +162,7 @@ export class UserService {
         ws.users.find((u) => u.id === user.id)
       ) {
         ws.users.splice(ws.users.indexOf(user), 1);
-        await this.workshopService.save(ws);  
+        await this.workshopService.save(ws);
         await this.cacheManager.del(`/api/workshop/copacity/${ws.id}`);
         break;
       }
@@ -193,5 +195,10 @@ export class UserService {
   async getJoinedWorkshops() {
     const user = this.requestService.getUser();
     return await this.workshopService.findJoinedWorkshops(user);
+  }
+
+  async getMyWorkshops() {
+    const user = this.requestService.getUser();
+    return await this.workshopService.findWorkshopsByLeader(user);
   }
 }
