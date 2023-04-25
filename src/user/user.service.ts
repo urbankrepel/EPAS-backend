@@ -6,6 +6,7 @@ import {
   BadRequestException,
   NotFoundException,
   CACHE_MANAGER,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
@@ -15,6 +16,7 @@ import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
 import { GradeEntity } from './entities/grade.entity';
 import { Cache } from 'cache-manager';
+import { RegisteredUsersOnWorkshops } from './entities/registeredUsersOnWorkshops.dto';
 
 @Injectable()
 export class UserService {
@@ -28,6 +30,8 @@ export class UserService {
     private readonly gradeReposetory: Repository<GradeEntity>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    @InjectRepository(RegisteredUsersOnWorkshops)
+    private readonly registeredUsersOnWorkshopsRepository: Repository<RegisteredUsersOnWorkshops>,
   ) {}
 
   async getUserByAzureId(
@@ -61,6 +65,10 @@ export class UserService {
   async getUserData() {
     const client = this.requestService.getClient();
     return client.api('/me').get();
+  }
+  async getUserRole() {
+    const user = this.requestService.getUser();
+    return user.role;
   }
 
   async getUserGrade(): Promise<string | null> {
@@ -227,16 +235,22 @@ export class UserService {
   }
 
   async chechIfUserIsInWorkshop(workshopId: number, user: User) {
+    if (!user) throw new NotFoundException('User not found');
     const [joinedWorkshops, workshop] = await Promise.all([
       this.workshopService.findJoinedWorkshops(user, true, false),
       this.workshopService.findOne(workshopId),
     ]);
+    if (!workshop) throw new NotFoundException('Workshop not found');
+    const leader = this.requestService.getUser();
+    if (workshop.leader.id !== leader.id)
+      throw new ForbiddenException("You're not a leader of this workshop");
     const isJoinedAtWorkshop = joinedWorkshops.find(
       (w) => w.id === workshop.id,
     );
     if (isJoinedAtWorkshop) {
       return {
         isJoinedAtWorkshop: true,
+        user: user,
       };
     }
     const workshopAtSameTimetable = joinedWorkshops.find(
@@ -246,7 +260,31 @@ export class UserService {
       return {
         isJoinedAtWorkshop: false,
         workshop: workshopAtSameTimetable,
+        user: user,
       };
     }
+    return {
+      isJoinedAtWorkshop: false,
+    };
+  }
+
+  async approveAttendance(workshopId: number, azureId: string) {
+    const [workshop, user] = await Promise.all([
+      this.workshopService.findOne(workshopId),
+      this.getUserByAzureId(azureId),
+    ]);
+    if (!workshop) throw new NotFoundException('Workshop not found');
+    if (!user) throw new NotFoundException('User not found');
+    const leader = this.requestService.getUser();
+    if (workshop.leader.id !== leader.id)
+      throw new ForbiddenException("You're not a leader of this workshop");
+
+    const registration =
+      await this.registeredUsersOnWorkshopsRepository.findOne({
+        where: { user_id: user.id, workshop_id: workshop.id },
+      });
+    if (!registration) throw new NotFoundException('Registration not found');
+    registration.attended = true;
+    await this.registeredUsersOnWorkshopsRepository.save(registration);
   }
 }

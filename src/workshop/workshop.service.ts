@@ -37,7 +37,7 @@ export class WorkshopService {
   async findOne(id: number) {
     return await this.workshopRepository.findOne({
       where: { id },
-      relations: ['timetable', 'users'],
+      relations: ['timetable', 'users', 'leader'],
       loadEagerRelations: true,
     });
   }

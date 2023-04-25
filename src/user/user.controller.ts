@@ -23,6 +23,12 @@ export class UserController {
     return true;
   }
 
+  @Get('role')
+  @HttpCode(200)
+  async getUserRole() {
+    return await this.userService.getUserRole();
+  }
+
   @Post('changeUserRole')
   @Roles(RolesEnum.ADMIN)
   @HttpCode(200)
@@ -86,7 +92,17 @@ export class UserController {
     @Body('workshopId', ParseIntPipe) workshopId: number,
     @Body('userCode', ParseIntPipe) userCode: number,
   ) {
-    const user:User = await this.userService.getUserByCode(userCode);
+    const user: User = await this.userService.getUserByCode(userCode);
     return await this.userService.chechIfUserIsInWorkshop(workshopId, user);
+  }
+
+  @Roles(RolesEnum.VODJA)
+  @Post('approve_attendenc')
+  @HttpCode(200)
+  async approveAttendance(
+    @Body('workshopId', ParseIntPipe) workshopId: number,
+    @Body('azureId') azureId: string,
+  ) {
+    return await this.userService.approveAttendance(workshopId, azureId);
   }
 }
