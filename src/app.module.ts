@@ -14,6 +14,7 @@ import { UserModule } from './user/user.module';
 import { WorkshopModule } from './workshop/workshop.module';
 import { redisStore } from 'cache-manager-redis-store';
 import { RedisClientOptions } from 'redis';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { RedisClientOptions } from 'redis';
     CommonModule,
     TokenModule,
     ConfigModule.forRoot({
+      load: [configuration],
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({

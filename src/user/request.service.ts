@@ -21,10 +21,21 @@ export class RequestService {
         done(null, token.accessToken.toString());
       },
     });
-    return await this.setUser();
+    return await this.setUser(token.user_azure_id);
   }
 
-  private async setUser(): Promise<boolean> {
+  private async setUser(user_azure_id?: string): Promise<boolean> {
+    if (user_azure_id) {
+      this.user = await this.userService.getUserByAzureId(user_azure_id, true);
+      if (!this.user.grade && this.user.role === RolesEnum.DIJAK) {
+        const grade = await this.getUserGrade();
+        if (!grade) {
+          throw new UnauthorizedException('You are not in allowed grades');
+        }
+        this.userService.setUserGrade(this.user, grade);
+      }
+      return true;
+    }
     try {
       const client = this.getClient();
       const user = await client.api('/me').get();
