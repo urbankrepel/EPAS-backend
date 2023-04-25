@@ -168,6 +168,10 @@ export class UserService {
     if (copacity <= workshop.users.length)
       throw new BadRequestException('Delavnica je polna');
 
+    const now = new Date();
+    if (now > workshop.timetable.start)
+      throw new BadRequestException('Delavnica se je že začela');
+
     const user = this.requestService.getUser();
 
     if (workshop.users.find((u) => u.id === user.id))
@@ -243,7 +247,7 @@ export class UserService {
     if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
     const leader = this.requestService.getUser();
     if (workshop.leader.id !== leader.id)
-      throw new ForbiddenException("Niste vodja te delavnice");
+      throw new ForbiddenException('Niste vodja te delavnice');
     const isJoinedAtWorkshop = joinedWorkshops.find(
       (w) => w.id === workshop.id,
     );
