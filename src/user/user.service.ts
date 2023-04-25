@@ -235,15 +235,15 @@ export class UserService {
   }
 
   async chechIfUserIsInWorkshop(workshopId: number, user: User) {
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('Uporabnik ni bil najden');
     const [joinedWorkshops, workshop] = await Promise.all([
       this.workshopService.findJoinedWorkshops(user, true, false),
       this.workshopService.findOne(workshopId),
     ]);
-    if (!workshop) throw new NotFoundException('Workshop not found');
+    if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
     const leader = this.requestService.getUser();
     if (workshop.leader.id !== leader.id)
-      throw new ForbiddenException("You're not a leader of this workshop");
+      throw new ForbiddenException("Niste vodja te delavnice");
     const isJoinedAtWorkshop = joinedWorkshops.find(
       (w) => w.id === workshop.id,
     );
@@ -273,17 +273,17 @@ export class UserService {
       this.workshopService.findOne(workshopId),
       this.getUserByAzureId(azureId),
     ]);
-    if (!workshop) throw new NotFoundException('Workshop not found');
-    if (!user) throw new NotFoundException('User not found');
+    if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
+    if (!user) throw new NotFoundException('Uporabnik ni bil najden');
     const leader = this.requestService.getUser();
     if (workshop.leader.id !== leader.id)
-      throw new ForbiddenException("You're not a leader of this workshop");
+      throw new ForbiddenException('Niste vodja te delavnice');
 
     const registration =
       await this.registeredUsersOnWorkshopsRepository.findOne({
         where: { user_id: user.id, workshop_id: workshop.id },
       });
-    if (!registration) throw new NotFoundException('Registration not found');
+    if (!registration) throw new NotFoundException('Napaka pri potrditvi');
     registration.attended = true;
     await this.registeredUsersOnWorkshopsRepository.save(registration);
   }
