@@ -8,7 +8,7 @@ export class TokenService {
 
   async getToken(jwt: string): Promise<Token> {
     try {
-      let decoded = this.jwtService.decode(jwt);
+      let decoded = this.jwtService.verify(jwt);
       if (!decoded) {
         throw new UnauthorizedException();
       }
