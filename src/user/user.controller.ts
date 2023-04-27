@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   NotFoundException,
+  Param,
   ParseIntPipe,
   Post,
 } from '@nestjs/common';
@@ -11,8 +12,8 @@ import { Roles } from 'src/roles/roles.decorator';
 import { RolesEnum } from 'src/roles/roles.enum';
 import { ChangeUserRoleDto } from './dto/changeUserRole.dto';
 import { GetUserByAzureIdDto } from './dto/getUserByAzureId.dto';
-import { UserService } from './user.service';
 import { User } from './entities/user.entity';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -104,5 +105,12 @@ export class UserController {
     @Body('azureId') azureId: string,
   ) {
     return await this.userService.approveAttendance(workshopId, azureId);
+  }
+
+  @Roles(RolesEnum.VODJA)
+  @Get('myworkshop/:id/joinlist')
+  @HttpCode(200)
+  async getJoinList(@Param('id', ParseIntPipe) workshopId: number) {
+    return await this.userService.getMyWorkshopJoinList(workshopId);
   }
 }

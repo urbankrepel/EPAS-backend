@@ -11,7 +11,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { RolesEnum } from 'src/roles/roles.enum';
 import { WorkshopService } from 'src/workshop/workshop.service';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
 import { GradeEntity } from './entities/grade.entity';
@@ -290,5 +290,36 @@ export class UserService {
     if (!registration) throw new NotFoundException('Napaka pri potrditvi');
     registration.attended = true;
     await this.registeredUsersOnWorkshopsRepository.save(registration);
+  }
+
+  async getMyWorkshopJoinList(workshopId: number) {
+    if (!workshopId) throw new BadRequestException('Workshop id is required');
+    const [registrations, workshop] = await Promise.all([
+      this.registeredUsersOnWorkshopsRepository.find({
+        where: { workshop_id: workshopId },
+      }),
+      this.workshopService.findOne(workshopId),
+    ]);
+
+    if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
+    if (registrations.length === 0)
+      throw new NotFoundException('Na delavnico se ni prijavil še nihče');
+
+    const leader = this.requestService.getUser();
+    if (workshop.leader.id !== leader.id)
+      throw new ForbiddenException('Niste vodja te delavnice');
+
+    const usersIds = registrations.map((r) => r.user_id);
+    const users = await this.userReposetory.find({
+      where: { id: In(usersIds) },
+      loadEagerRelations: false,
+    });
+    return registrations.map((r) => {
+      const user = users.find((u) => u.id === r.user_id);
+      return {
+        azureId: user.azureId,
+        attended: r.attended,
+      };
+    });
   }
 }
