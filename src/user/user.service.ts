@@ -205,7 +205,7 @@ export class UserService {
       user: user,
       workshop: workshop,
     });
-
+    await this.cacheManager.del(`/api/workshop/copacity/${workshop.id}`);
     return { message: 'User joined workshop' };
   }
 
@@ -214,6 +214,7 @@ export class UserService {
       user: this.requestService.getUser(),
       workshop: { id: workshopId },
     });
+    await this.cacheManager.del(`/api/workshop/copacity/${workshopId}`);
     return { message: 'User left workshop' };
   }
 
