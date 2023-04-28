@@ -7,9 +7,11 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GradeEntity } from './grade.entity';
+import { Registration } from './registrations';
 
 @Entity('users')
 export class User {
@@ -25,13 +27,8 @@ export class User {
   @Column({ nullable: true, unique: true })
   code: number;
 
-  @ManyToMany(() => Workshop, (workshop) => workshop.users)
-  @JoinTable({
-    name: 'registered_users_on_workshops',
-    joinColumn: { name: 'user_id' },
-    inverseJoinColumn: { name: 'workshop_id' },
-  })
-  workshops: Workshop[];
+  @OneToOne(() => Registration)
+  registration: Registration;
 
   @ManyToOne(() => GradeEntity)
   @JoinColumn({ name: 'grade_id' })

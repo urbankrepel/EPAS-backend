@@ -1,4 +1,5 @@
 import { Timetable } from 'src/timetable/entities/timetable.entity';
+import { Registration } from 'src/user/entities/registrations';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -6,6 +7,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -29,10 +31,8 @@ export class Workshop {
   @JoinColumn({ name: 'timetable_id' })
   timetable: Timetable;
 
-  @ManyToMany(() => User, (user) => user.workshops, {
-    eager: true,
-  })
-  users: User[];
+  @OneToOne(() => Registration, { eager: false, lazy: true })
+  registration: Registration;
 
   @Column({ type: 'int', nullable: false, default: 21 })
   capacity: number;

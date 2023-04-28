@@ -16,7 +16,7 @@ import { User } from './entities/user.entity';
 import { RequestService } from './request.service';
 import { GradeEntity } from './entities/grade.entity';
 import { Cache } from 'cache-manager';
-import { RegisteredUsersOnWorkshops } from './entities/registeredUsersOnWorkshops.dto';
+import { Registration } from './entities/registrations';
 
 @Injectable()
 export class UserService {
@@ -30,8 +30,8 @@ export class UserService {
     private readonly gradeReposetory: Repository<GradeEntity>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-    @InjectRepository(RegisteredUsersOnWorkshops)
-    private readonly registeredUsersOnWorkshopsRepository: Repository<RegisteredUsersOnWorkshops>,
+    @InjectRepository(Registration)
+    private readonly registrations: Repository<Registration>,
   ) {}
 
   async getUserByAzureId(
@@ -160,77 +160,77 @@ export class UserService {
   }
 
   async joinWorkshop(workshopId: number) {
-    const workshops = await this.workshopService.findAll();
-    const workshop = workshops.find((w) => w.id === workshopId);
+    const [workshop, registeredUsers] = await Promise.all([
+      this.workshopService.findOne(workshopId),
+      this.registrations.find({
+        where: { workshop: { id: workshopId } },
+        loadRelationIds: true,
+      }),
+    ]);
     if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
-
-    const copacity = workshop.capacity;
-    if (copacity <= workshop.users.length)
-      throw new BadRequestException('Delavnica je polna');
-
-    const now = new Date();
-    if (now > workshop.timetable.start)
-      throw new BadRequestException('Delavnica se je že začela');
 
     const user = this.requestService.getUser();
 
-    if (workshop.users.find((u) => u.id === user.id))
-      throw new BadRequestException('V to delavnico ste že prijavljeni');
+    if (registeredUsers.length >= workshop.capacity)
+      throw new BadRequestException('Delevnica je že polna');
 
-    const usersWorkshops = workshops.filter((workshop) =>
-      workshop.users.find((u) => u.id === user.id) ? true : false,
-    );
-    const workshopWithSameName = usersWorkshops.find(
-      (userWorkshop) => userWorkshop.name === workshop.name,
-    );
-    if (workshopWithSameName !== undefined) {
+    if (registeredUsers.find((u: any) => u.user === user.id))
+      throw new BadRequestException('Si že prijavljen na delavnico');
+
+    const workshopWithSameName = await this.registrations.findOne({
+      where: { user: { id: user.id }, workshop: { name: workshop.name } },
+      relations: ['workshop'],
+    });
+    if (workshopWithSameName) {
       throw new BadRequestException({
-        workshopWithSameNameId: workshopWithSameName.id,
+        workshopWithSameNameId: workshopWithSameName.workshop.id,
         message: "You can't join two workshops with the same name",
         statusCode: 400,
       });
     }
 
-    const timetable = workshop.timetable;
-    for (const ws of workshops) {
-      if (
-        ws.timetable.id === timetable.id &&
-        ws.users.find((u) => u.id === user.id)
-      ) {
-        ws.users.splice(ws.users.indexOf(user), 1);
-        await this.workshopService.save(ws);
-        await this.cacheManager.del(`/api/workshop/copacity/${ws.id}`);
-        break;
-      }
+    const sameTimetable: any = await this.registrations.findOne({
+      where: {
+        user: { id: user.id },
+        workshop: { timetable: { id: workshop.timetable.id } },
+      },
+      loadRelationIds: true,
+    });
+
+    if (sameTimetable) {
+      await this.leaveWorkshop(sameTimetable.workshop);
     }
 
-    workshop.users.push(user);
-    await this.workshopService.save(workshop);
-    await this.cacheManager.del(`/api/workshop/copacity/${workshop.id}`);
+    await this.registrations.save({
+      user: user,
+      workshop: workshop,
+    });
 
     return { message: 'User joined workshop' };
   }
 
   async leaveWorkshop(workshopId: number) {
-    const workshops = await this.workshopService.findAll();
-    const workshop = workshops.find((w) => w.id === workshopId);
-    if (!workshop) throw new NotFoundException('Workshop not found');
-
-    const user = this.requestService.getUser();
-
-    if (!workshop.users.find((u) => u.id === user.id))
-      throw new BadRequestException('User is not in workshop');
-
-    workshop.users.splice(workshop.users.indexOf(user), 1);
-    await this.workshopService.save(workshop);
-    await this.cacheManager.del(`/api/workshop/copacity/${workshop.id}`);
-
+    await this.registrations.delete({
+      user: this.requestService.getUser(),
+      workshop: { id: workshopId },
+    });
     return { message: 'User left workshop' };
   }
 
   async getJoinedWorkshops() {
     const user = this.requestService.getUser();
-    return await this.workshopService.findJoinedWorkshops(user);
+    const registrations = await this.registrations.find({
+      where: { user: { id: user.id } },
+      relations: ['workshop', 'workshop.timetable'],
+    });
+
+    return registrations.map((r) => {
+      return {
+        ...r.workshop,
+        timetable: r.workshop.timetable.id,
+        attended: r.attended,
+      };
+    });
   }
 
   async getMyWorkshops() {
@@ -240,31 +240,37 @@ export class UserService {
 
   async chechIfUserIsInWorkshop(workshopId: number, user: User) {
     if (!user) throw new NotFoundException('Uporabnik ni bil najden');
-    const [joinedWorkshops, workshop] = await Promise.all([
-      this.workshopService.findJoinedWorkshops(user, true, false),
+    const [registration, workshop] = await Promise.all([
+      this.registrations.findOne({
+        where: { user: { id: user.id }, workshop: { id: workshopId } },
+      }),
       this.workshopService.findOne(workshopId),
     ]);
+
     if (!workshop) throw new NotFoundException('Delavnica ne obstaja');
+
     const leader = this.requestService.getUser();
     if (workshop.leader.id !== leader.id)
       throw new ForbiddenException('Niste vodja te delavnice');
-    const isJoinedAtWorkshop = joinedWorkshops.find(
-      (w) => w.id === workshop.id,
-    );
-    if (isJoinedAtWorkshop) {
+
+    if (registration) {
       return {
         isJoinedAtWorkshop: true,
         user: user,
       };
     }
-    const workshopAtSameTimetable = joinedWorkshops.find(
-      (w) => w.timetable.id === workshop.timetable.id,
-    );
-    if (workshopAtSameTimetable) {
+    const someTimetable = await this.registrations.findOne({
+      where: {
+        user: { id: user.id },
+        workshop: { timetable: { id: workshop.timetable.id } },
+      },
+      relations: ['workshop'],
+    });
+    if (someTimetable) {
       return {
         isJoinedAtWorkshop: false,
-        workshop: workshopAtSameTimetable,
         user: user,
+        workshop: someTimetable.workshop,
       };
     }
     return {
@@ -283,20 +289,20 @@ export class UserService {
     if (workshop.leader.id !== leader.id)
       throw new ForbiddenException('Niste vodja te delavnice');
 
-    const registration =
-      await this.registeredUsersOnWorkshopsRepository.findOne({
-        where: { user_id: user.id, workshop_id: workshop.id },
-      });
+    const registration = await this.registrations.findOne({
+      where: { user: { id: user.id }, workshop: { id: workshop.id } },
+    });
     if (!registration) throw new NotFoundException('Napaka pri potrditvi');
     registration.attended = true;
-    await this.registeredUsersOnWorkshopsRepository.save(registration);
+    await this.registrations.save(registration);
   }
 
   async getMyWorkshopJoinList(workshopId: number) {
     if (!workshopId) throw new BadRequestException('Workshop id is required');
     const [registrations, workshop] = await Promise.all([
-      this.registeredUsersOnWorkshopsRepository.find({
-        where: { workshop_id: workshopId },
+      this.registrations.find({
+        where: { workshop: { id: workshopId } },
+        loadRelationIds: true,
       }),
       this.workshopService.findOne(workshopId),
     ]);
@@ -308,18 +314,23 @@ export class UserService {
     const leader = this.requestService.getUser();
     if (workshop.leader.id !== leader.id)
       throw new ForbiddenException('Niste vodja te delavnice');
-
-    const usersIds = registrations.map((r) => r.user_id);
+    const usersIds = registrations.map((r) => r.user);
     const users = await this.userReposetory.find({
       where: { id: In(usersIds) },
       loadEagerRelations: false,
     });
-    return registrations.map((r) => {
-      const user = users.find((u) => u.id === r.user_id);
+    return registrations.map((r: any) => {
+      const user = users.find((u) => u.id === r.user);
       return {
         azureId: user.azureId,
         attended: r.attended,
       };
+    });
+  }
+
+  async getUserCount(workshopId: number) {
+    return await this.registrations.count({
+      where: { workshop: { id: workshopId } },
     });
   }
 }

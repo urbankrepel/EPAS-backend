@@ -5,18 +5,20 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
 import { Workshop } from './entities/workshop.entity';
-import { RequestService } from 'src/user/request.service';
-import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class WorkshopService {
   constructor(
     @InjectRepository(Workshop)
     private readonly workshopRepository: Repository<Workshop>,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
   ) {}
   async create(createWorkshopDto: CreateWorkshopDto) {
     const timetableId = createWorkshopDto.timetableId;
@@ -29,7 +31,7 @@ export class WorkshopService {
 
   async findAll() {
     return await this.workshopRepository.find({
-      relations: ['timetable', 'users'],
+      relations: ['timetable'],
       loadEagerRelations: true,
     });
   }
@@ -37,7 +39,7 @@ export class WorkshopService {
   async findOne(id: number) {
     return await this.workshopRepository.findOne({
       where: { id },
-      relations: ['timetable', 'users', 'leader'],
+      relations: ['timetable', 'leader'],
       loadEagerRelations: true,
     });
   }
@@ -79,42 +81,42 @@ export class WorkshopService {
   }
 
   async getCountAndCopacityByTimetableId(workshopId: number) {
-    const workshop = await this.workshopRepository.findOne({
-      where: { id: workshopId },
-      relations: ['users'],
-    });
+    const [workshop, userCount] = await Promise.all([
+      this.workshopRepository.findOne({
+        where: { id: workshopId },
+      }),
+      this.userService.getUserCount(workshopId),
+    ]);
 
     return {
-      count: workshop.users.length,
+      count: userCount,
       capacity: workshop.capacity,
     };
   }
 
   async findWorkshopsByName(name: string) {
-    return await this.workshopRepository.find({
+    const workshop = await this.workshopRepository.find({
       where: { name: name },
-      loadRelationIds: true,
-    });
-  }
-
-  async findJoinedWorkshops(
-    user: User,
-    loadEagerRelations: boolean = false,
-    loadRelationIds: boolean = true,
-  ) {
-    return await this.workshopRepository.find({
-      where: { users: { id: user.id } },
       relations: ['timetable'],
-      loadRelationIds: loadRelationIds,
-      loadEagerRelations: loadEagerRelations,
+    });
+    return workshop.map((workshop) => {
+      return {
+        ...workshop,
+        timetable: workshop.timetable.id,
+      };
     });
   }
 
   async findWorkshopsByLeader(leader: User) {
-    return await this.workshopRepository.find({
+    const workshops = await this.workshopRepository.find({
       where: { leader: { id: leader.id } },
       relations: ['timetable'],
-      loadRelationIds: true,
+    });
+    return workshops.map((workshop) => {
+      return {
+        ...workshop,
+        timetable: workshop.timetable.id,
+      };
     });
   }
 }

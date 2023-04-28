@@ -10,7 +10,7 @@ import { UserService } from './user.service';
 import { RequestService } from './request.service';
 import { WorkshopModule } from 'src/workshop/workshop.module';
 import { GradeEntity } from './entities/grade.entity';
-import { RegisteredUsersOnWorkshops } from './entities/registeredUsersOnWorkshops.dto';
+import { Registration } from './entities/registrations';
 
 @Module({
   providers: [
@@ -24,7 +24,7 @@ import { RegisteredUsersOnWorkshops } from './entities/registeredUsersOnWorkshop
   imports: [
     TokenModule,
     CommonModule,
-    TypeOrmModule.forFeature([User, GradeEntity, RegisteredUsersOnWorkshops]),
+    TypeOrmModule.forFeature([User, GradeEntity, Registration]),
     WorkshopModule,
   ],
   controllers: [UserController],
