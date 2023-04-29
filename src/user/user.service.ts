@@ -177,6 +177,15 @@ export class UserService {
     if (registeredUsers.find((u: any) => u.user === user.id))
       throw new BadRequestException('Si že prijavljen na delavnico');
 
+    const dateNow = new Date();
+    const registrationDeadline = new Date(); // 5.5.2023 10:00
+    registrationDeadline.setFullYear(2023, 4, 5);
+    registrationDeadline.setHours(10);
+    registrationDeadline.setMinutes(0);
+
+    if (dateNow > registrationDeadline)
+      throw new BadRequestException('Rok za prijavo je potekel');
+
     const workshopWithSameName = await this.registrations.findOne({
       where: { user: { id: user.id }, workshop: { name: workshop.name } },
       relations: ['workshop'],
